@@ -1,33 +1,36 @@
 const express = require('express');
 const cors = require('cors');
-const { neon } = require('@neondatabase/serverless');
 
 const app = express();
 
-// Middleware
+// Middleware minimal
 app.use(cors());
 app.use(express.json());
 
-// Koneksi ke Neon (Vercel-optimized)
-const sql = neon(process.env.DATABASE_URL);
-
-// Routes
-app.get('/api/health', async (req, res) => {
-  try {
-    const result = await sql`SELECT NOW() as time`;
-    res.json({
-      status: 'success',
-      message: 'Blaz CRM API running on Vercel',
-      database: 'Connected',
-      time: result[0].time
-    });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: error.message });
-  }
+// Health check tanpa database dulu
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'success',
+    message: 'Server is running on Vercel',
+    timestamp: new Date().toISOString()
+  });
 });
 
+// Test endpoint
 app.get('/api/test', (req, res) => {
-  res.json({ message: 'Backend API is working on Vercel!' });
+  res.json({ 
+    message: 'Backend API is working!',
+    endpoints: ['/api/health', '/api/test']
+  });
+});
+
+// Root endpoint untuk cek
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Blaz CRM Backend API',
+    status: 'active',
+    documentation: '/api/health'
+  });
 });
 
 // Export untuk Vercel
